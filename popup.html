@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WB Token Plugin</title>
+    <style>
+        body {
+            width: 300px;
+            padding: 10px;
+        }
+        input, button, textarea {
+            width: 90%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        textarea {
+            height: 150px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" id="tokenInput" placeholder="Enter your token">
+    <button id="submitToken">Submit Token</button>
+    <button id="getIds">Get goods ids</button>
+    <button id="fetchData">Fetch Data</button>
+    <button id="deleteToken">Delete Token</button>
+    <textarea id="outputText" placeholder="Messages and extracted text will appear here" readonly></textarea>
+    <script src="popup.js"></script>
+</body>
+</html>
