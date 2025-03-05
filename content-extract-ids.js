@@ -1,25 +1,29 @@
-// Функция для извлечения nmID
 function extractNmIDs() {
     const rows = document.querySelectorAll(
         'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
     );
-    
-    const ids = {};
+
+    const ids = new Map(); // wbId -> index in array
 
     const id_list= Array.from(rows).map(row => {
         const element = row.querySelector('span[data-testid="card-nmID-text"]');
         return element ? element.innerText.split(": ")[1] : null;
-    }).filter(Boolean); 
+    }).filter(Boolean);
 
     id_list.forEach(function(item, i) {
-        ids[i] = item
+        ids[item] = i
     });
-    
-    console.log(ids);
 
-    if (ids.size > 0) {
-        chrome.storage.local.set({ 'wbIds': ids });
-        chrome.runtime.sendMessage({ action: 'updateCount', count: ids.size });
+    console.log(ids);
+    console.log(id_list);
+    return [ids, id_list];
+}
+
+function updateStorageWbIds() {
+    const [mapIdsToIndex, id_list] = extractNmIDs()
+    if (id_list.size > 0) {
+        chrome.storage.local.set({ 'wbIds': id_list});
+        chrome.storage.local.set({ 'mapWbIdToIndex': mapIdsToIndex});
     }
 }
 
@@ -27,7 +31,7 @@ function extractNmIDs() {
 const observer = new MutationObserver((mutationsList) => {
     for (const mutation of mutationsList) {
         if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            extractNmIDs();
+            updateStorageWbIds();
         }
     }
 });

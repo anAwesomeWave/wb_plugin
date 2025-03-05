@@ -56,14 +56,14 @@ setInterval(updateUI, 2000);
 
 // Запрашиваем данные с API при нажатии кнопки
 document.getElementById('fetchData').addEventListener('click', function() {
+    console.log("FETCH DATA POPUP")
   // Отправляем сообщение в фоновый скрипт для выполнения запроса
-  chrome.runtime.sendMessage({ action: "fetchData" }, function(response) {
-    console.log(response.farewell);
+    chrome.runtime.sendMessage({ action: "fetchData" }, function(response) {
       if (response && response.data) {
           const outputText = document.getElementById('outputText');
           outputText.value = "Fetched data:\n" + JSON.stringify(response.data, null, 2) + "\n\n" + outputText.value;
       } else {
           alert("Failed to fetch data.");
       }
-  });
+    });
 });
