@@ -6,25 +6,70 @@
         body {
             width: 300px;
             padding: 10px;
+            font-family: Arial, sans-serif;
         }
         input, button, textarea {
             width: 90%;
             padding: 10px;
             margin-top: 5px;
+            box-sizing: border-box;
         }
         textarea {
             height: 150px;
             resize: none;
         }
+        .tab {
+            display: flex; /* Делаем вкладки в одну строку */
+            border-bottom: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+        .tab button {
+            background-color: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 10px 16px;
+            transition: 0.3s;
+            flex: 1; /* Равномерное распределение ширины */
+            text-align: center;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
     </style>
 </head>
 <body>
+
+<div class="tab">
+    <button class="tablinks" id="tokenTabButton">Token Tab</button>
+    <button class="tablinks" id="inputTabButton">Input Tab</button>
+</div>
+
+<div id="TokenTab" class="tabcontent">
     <input type="text" id="tokenInput" placeholder="Enter your token">
     <button id="submitToken">Submit Token</button>
     <button id="getIds">Get goods ids</button>
     <button id="fetchData">Fetch Data</button>
     <button id="deleteToken">Delete Token</button>
     <textarea id="outputText" placeholder="Messages and extracted text will appear here" readonly></textarea>
-    <script src="popup.js"></script>
+</div>
+
+<div id="InputTab" class="tabcontent">
+    <input type="text" id="timeFrom" placeholder="Stats Period in days">
+    <input type="text" id="greenborder" placeholder="Green border value in days (>=)">
+    <input type="text" id="yellowborder" placeholder="Yellow border value in days (>=)">
+    <button id="submitInputs">Submit Inputs</button>
+</div>
+
+<script src="popup.js"></script>
 </body>
 </html>
