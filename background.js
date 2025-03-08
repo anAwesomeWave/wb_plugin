@@ -6,7 +6,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       const apiUrl = "https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail";
       chrome.storage.local.get(['userToken', 'wbIds'], (result) => {
         console.log("My token ", result.userToken)
-        if (result.userToken !== undefined) {
+        if (result.userToken !== undefined) { // TODO: обработать пустой wbIds
             // токен найден
             token = result.userToken;
             const today = new Date();
