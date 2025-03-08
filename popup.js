@@ -1,9 +1,14 @@
 // Ожидаем загрузки DOM
 document.addEventListener("DOMContentLoaded", function () {
   // Загружаем токен из хранилища при открытии popup
-  chrome.storage.local.get(['userToken'], function(result) {
+  chrome.storage.local.get(['userToken', 'timeFrom', 'greenborder', 'yellowborder'], function(result) {
       if (result.userToken) {
-          document.getElementById('tokenInput').value = result.userToken;
+        document.getElementById('tokenInput').value = result.userToken;
+      } 
+      if (result.timeFrom && result.greenborder && result.yellowborder){
+        document.getElementById('timeFrom').value = result.timeFrom;
+        document.getElementById('greenborder').value = result.greenborder;
+        document.getElementById('yellowborder').value = result.yellowborder;
       }
   });
 

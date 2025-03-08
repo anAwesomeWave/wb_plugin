@@ -8,17 +8,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         if (result.userToken !== undefined && result.wbIds !== undefined) { // TODO: обработать пустой wbIds правильно
             console.log(result.wbIds)
             // токен найден
-            const today = new Date();
-            const twoWeeksLater = new Date(today); // Создаем копию сегодняшней даты
+            const now = new Date();
+            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const twoWeeksLater = new Date(todayMidnight); // Создаем копию сегодняшней даты
             if (result.timeFrom === undefined){
-                twoWeeksLater.setDate(today.getDate() - 14);
+                twoWeeksLater.setDate(todayMidnight.getDate() - 14);
             } else {
-                twoWeeksLater.setDate(today.getDate() - result.timeFrom);
+                twoWeeksLater.setDate(todayMidnight.getDate() - parseInt(result.timeFrom, 10));
             }
             
 
-            const todayDatePart = today.toLocaleDateString('en-CA'); // Формат "YYYY-MM-DD"
-            const todayTimePart = today.toLocaleTimeString('en-GB', { hour12: false }); // Формат "HH:MM:SS"
+            const todayDatePart = todayMidnight.toLocaleDateString('en-CA'); // Формат "YYYY-MM-DD"
+            const todayTimePart = todayMidnight.toLocaleTimeString('en-GB', { hour12: false }); // Формат "HH:MM:SS"
             const todayFormated = `${todayDatePart} ${todayTimePart}`;
 
             const pastdatePart = twoWeeksLater.toLocaleDateString('en-CA'); // Формат "YYYY-MM-DD"
