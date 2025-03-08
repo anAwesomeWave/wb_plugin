@@ -38,6 +38,28 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 
+  // Сохраняем токен при нажатии кнопки
+  document.getElementById('submitInputs').addEventListener('click', function() {
+    const timeFrom = document.getElementById('timeFrom').value;
+    const greenborder = document.getElementById('greenborder').value;
+    const yellowborder = document.getElementById('yellowborder').value;
+    if (!timeFrom || !greenborder || !yellowborder) {
+        alert("Settings fields cannot be empty!");
+        return;
+    }
+
+    // Сохраняем токен в хранилище
+    chrome.storage.local.set({'timeFrom': timeFrom }, function() {
+        console.log('TimeFrom saved:', timeFrom);
+    });
+    chrome.storage.local.set({'greenborder': greenborder }, function() {
+        console.log('Greenborder saved:', greenborder);
+    });
+    chrome.storage.local.set({'yellowborder': yellowborder }, function() {
+        console.log('Yellowborder saved:', yellowborder);
+    });
+});
+
   // Обновление UI с количеством nmID
   function updateUI() {
       chrome.storage.local.get(['wbIds'], ({ wbIds = {} }) => {
