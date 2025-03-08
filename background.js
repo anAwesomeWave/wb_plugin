@@ -39,9 +39,36 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
             // Выполняем запрос
             fetch(apiUrl, requestOptions)
-                .then(response => response.json())
-                .then(data => {
-                    sendResponse({ data: data.data.cards });  // Отправляем данные обратно в popup
+                .then(response => {
+                    const status = response.status;
+                    return response.json().then(data => ({ status, data }));
+                })
+                .then(({status, data}) => {
+                    console.log(data)
+                    switch (status) {
+                        case 200:
+                            // все ок, достаем данные
+                            const outData = { action: 'fetchdata', code: status, data: data.data}
+                            sendResponse(outData);
+                            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+                                chrome.tabs.sendMessage(tabs[0].id, outData);
+                            });
+                            break
+                        case 400:
+                            // по идее внутреняя ошибка
+                            break
+                        case 401:
+                            // нет токена, или он невалидный
+                            break
+                        case 403:
+                            // нет доступа, невалидный токен
+                            break
+                        case 429:
+                            // Максимум 3 запроса в минуту на один аккаунт продавца
+                            break
+
+                    }
+                    // sendResponse({ data: data.data });  // Отправляем данные обратно в popup
                 })
                 .catch(error => {
                     console.error("Error fetching data:", error);
@@ -52,7 +79,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             // id - уникальное!
             console.log("NO TOKEN FOUND")
             chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-              chrome.tabs.sendMessage(tabs[0].id, { action: 'noTokenNotification', message: 'Токен не найден!' });
+                chrome.tabs.sendMessage(tabs[0].id, { action: 'noTokenNotification', message: 'Токен не найден!' });
             });
         }
 

@@ -30,7 +30,7 @@
   "content_scripts": [
     {
       "matches": ["https://seller.wildberries.ru/new-goods/all-goods"],
-      "js": ["content-extract-ids.js", "content-no-token-display.js"]
+      "js": ["content-extract-ids.js", "content-no-token-display.js", "content-fetchdata-update.js"]
     }
   ]
 }

@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateUI() {
       chrome.storage.local.get(['wbIds'], ({ wbIds = {} }) => {
           const outputText = document.getElementById('outputText');
-          outputText.value = `WB ids: ${wbIds}\n` + outputText.value;
+          outputText.value = `WB ids len: ${wbIds.length}\n` + outputText.value;
       });
   }
 
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", function () {
       chrome.runtime.sendMessage({ action: "fetchData" }, function(response) {
           if (response && response.data) {
               const outputText = document.getElementById('outputText');
-              outputText.value = "Fetched data:\n" + JSON.stringify(response.data, null, 2) + "\n\n" + outputText.value;
+              outputText.value = `Fetched data code ${response.code} cards: ${JSON.stringify(response.data, null, 2) + "\n\n"}` +  + outputText.value;
           } else {
               alert("Failed to fetch data.");
           }
