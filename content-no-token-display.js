@@ -1,5 +1,5 @@
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.action === 'noTokenNotification') {
+  if (request.action === 'noTokenNotification' || request.action === "nowbIdsNotification") {
     // Создаем элемент для уведомления
     const notificationDiv = document.createElement('div');
     notificationDiv.innerText = request.message;

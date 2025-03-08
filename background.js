@@ -5,10 +5,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       // Пример API-запроса
       const apiUrl = "https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail";
       chrome.storage.local.get(['userToken', 'wbIds'], (result) => {
-        console.log("My token ", result.userToken)
-        if (result.userToken !== undefined) { // TODO: обработать пустой wbIds
+        if (result.userToken !== undefined && result.wbIds !== undefined) { // TODO: обработать пустой wbIds правильно
+            console.log(result.wbIds)
             // токен найден
-            token = result.userToken;
             const today = new Date();
             const twoWeeksLater = new Date(today); // Создаем копию сегодняшней даты
             twoWeeksLater.setDate(today.getDate() - 14);
@@ -22,13 +21,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             const pastFormated = `${pastdatePart} ${pasttimePart}`;
 
             const requestOptions = {
-                method: "POST",  // или "GET"
+                method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": token  // Если требуется авторизация
+                    "Authorization": result.userToken
                 },
-                body: JSON.stringify({  // Тело запроса (если требуется)
-                    "nmIds": result.wbIDs,
+                body: JSON.stringify({
+                    "nmIds": result.wbIds,  // TODO: FIX THIS ASAP. need arr of uint64, got arr of string
                     "period": {
                         "begin": pastFormated,
                         "end": todayFormated
@@ -37,14 +36,13 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                 })
             };
 
-            // Выполняем запрос
             fetch(apiUrl, requestOptions)
                 .then(response => {
                     const status = response.status;
                     return response.json().then(data => ({ status, data }));
                 })
                 .then(({status, data}) => {
-                    console.log(data)
+                    console.log("fetch", status, data)
                     switch (status) {
                         case 200:
                             // все ок, достаем данные
@@ -77,10 +75,17 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         } else {
             // токена нет, надо уведомить юзера
             // id - уникальное!
-            console.log("NO TOKEN FOUND")
-            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-                chrome.tabs.sendMessage(tabs[0].id, { action: 'noTokenNotification', message: 'Токен не найден!' });
-            });
+            if (result.userToken === undefined) {
+                console.log("NO TOKEN FOUND")
+                chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'noTokenNotification', message: 'Токен не найден!'});
+                });
+            } else {
+                console.log("NO WB_IDS FOUND")
+                chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'nowbIdsNotification', message: 'wbIds не найдены в сторейдже'});
+                });
+            }
         }
 
       });

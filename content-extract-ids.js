@@ -22,9 +22,12 @@ function extractNmIDs() {
 function updateStorageWbIds() {
     const [mapIdsToIndex, id_list] = extractNmIDs()
 
-    if (id_list.length > 0) {
+    if (mapIdsToIndex !== undefined && id_list !== undefined && id_list.length > 0) {
+        console.log('Update storage!', id_list)
         chrome.storage.local.set({'wbIds': id_list});
         chrome.storage.local.set({'mapWbIdToIndex': mapIdsToIndex});
+    } else {
+        console.log("ERROR UPDATING STORAGE", mapIdsToIndex, id_list)
     }
 }
 

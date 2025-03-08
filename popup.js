@@ -21,9 +21,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
           // Выводим сообщение об успехе в текстовое поле
           const outputText = document.getElementById('outputText');
-          chrome.storage.sync.get(['userToken'], (result) => {
-              console.log('Полученное значение:', result.userToken); // myValue
-          });
           outputText.value = "Token saved successfully!\n" + outputText.value;
       });
   });
