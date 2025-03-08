@@ -44,8 +44,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Обновление UI с количеством nmID
   function updateUI() {
       chrome.storage.local.get(['wbIds'], ({ wbIds = {} }) => {
-          const countElement = document.getElementById('outputText');
-          countElement.textContent = wbIds;
+          const outputText = document.getElementById('outputText');
+          outputText.value = `WB ids: ${wbIds}\n` + outputText.value;
       });
   }
 
