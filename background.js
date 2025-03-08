@@ -4,13 +4,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log("NEW FETCH BACKGROUND")
       // Пример API-запроса
       const apiUrl = "https://seller-analytics-api.wildberries.ru/api/v2/nm-report/detail";
-      chrome.storage.local.get(['userToken', 'wbIds'], (result) => {
+      chrome.storage.local.get(['userToken', 'wbIds', 'timeFrom'], (result) => {
         if (result.userToken !== undefined && result.wbIds !== undefined) { // TODO: обработать пустой wbIds правильно
             console.log(result.wbIds)
             // токен найден
             const today = new Date();
             const twoWeeksLater = new Date(today); // Создаем копию сегодняшней даты
-            twoWeeksLater.setDate(today.getDate() - 14);
+            if (result.timeFrom === undefined){
+                twoWeeksLater.setDate(today.getDate() - 14);
+            } else {
+                twoWeeksLater.setDate(today.getDate() - result.timeFrom);
+            }
+            
 
             const todayDatePart = today.toLocaleDateString('en-CA'); // Формат "YYYY-MM-DD"
             const todayTimePart = today.toLocaleTimeString('en-GB', { hour12: false }); // Формат "HH:MM:SS"
@@ -27,7 +32,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
                     "Authorization": result.userToken
                 },
                 body: JSON.stringify({
-                    "nmIds": result.wbIds,  // TODO: FIX THIS ASAP. need arr of uint64, got arr of string
+                    "nmIds": result.wbIds,
                     "period": {
                         "begin": pastFormated,
                         "end": todayFormated

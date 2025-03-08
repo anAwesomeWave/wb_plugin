@@ -7,7 +7,7 @@ function extractNmIDs() {
 
     const id_list= Array.from(rows).map(row => {
         const element = row.querySelector('span[data-testid="card-nmID-text"]');
-        return element ? element.innerText.split(": ")[1] : null;
+        return element ? BigInt(element.innerText.split(": ")[1]) : null;
     }).filter(Boolean);
 
     id_list.forEach(function(item, i) {
