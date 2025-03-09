@@ -100,10 +100,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // Открываем вкладку по умолчанию
   document.getElementById("tokenTabButton").click();
 
-  // Обновление данных при открытии popup
-  updateUI();
-  // Обновление каждые 2 секунды
-  setInterval(updateUI, 2000);
+  // уже не надо как будто
+  // // Обновление данных при открытии popup
+  // updateUI();
+  // // Обновление каждые 2 секунды
+  // setInterval(updateUI, 2000);
 
   // Запрашиваем данные с API при нажатии кнопки
   document.getElementById('fetchData').addEventListener('click', function() {

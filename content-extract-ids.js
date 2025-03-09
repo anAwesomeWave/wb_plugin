@@ -14,8 +14,8 @@ function extractNmIDs() {
         ids[item] = i
     });
 
-    console.log(ids);
-    console.log(id_list);
+    // console.log(ids);
+    // console.log(id_list);
     return [ids, id_list];
 }
 
@@ -23,7 +23,7 @@ function updateStorageWbIds() {
     const [mapIdsToIndex, id_list] = extractNmIDs()
 
     if (mapIdsToIndex !== undefined && id_list !== undefined && id_list.length > 0) {
-        console.log('Update storage!', id_list)
+        // console.log('Update storage!', id_list)
         chrome.storage.local.set({'wbIds': id_list});
         chrome.storage.local.set({'mapWbIdToIndex': mapIdsToIndex});
     } else {

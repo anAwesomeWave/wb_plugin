@@ -1,3 +1,5 @@
+const OUT_ELEMS_CLASS = "wbPluginMZ"
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === 'fetchdata') {
     // есть данные запроса ()
@@ -44,6 +46,7 @@ function updateSingleProduct(product) {
 }
 
 function updateProductElem(elemInd, daysLeft) {
+
     let newElem = document.createElement("div")
     const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
     const svg = document.createElementNS(svgNS, "svg");
@@ -70,13 +73,17 @@ function updateProductElem(elemInd, daysLeft) {
         }
     })
     
-    newElem.className = "wbPluginMZ"
+    newElem.className = OUT_ELEMS_CLASS
     // Добавляем круг в SVG
     svg.appendChild(circle);
 
-    // document.querySelectorAll(
-    //     'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
-    // )[elemInd].querySelector('div[class^=Stock]').appendChild(newElem)
+
+    const existedElems = document.querySelectorAll(
+        'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
+    )[elemInd].querySelector('td[data-testid$=stocks]').querySelectorAll(`.${OUT_ELEMS_CLASS}`)
+    while(existedElems.length > 0) {
+        existedElems[0].parentNode.removeChild(existedElems[0]);
+    }
     document.querySelectorAll(
         'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
     )[elemInd].querySelector('td[data-testid$=stocks]').firstChild.appendChild(newElem)
@@ -99,9 +106,35 @@ function parseTotalRemainsForProduct(wbListInd) {
     )[wbListInd].querySelector('td[data-testid$="stocks"]').querySelector('span').innerText, 10);
 }
 
-const fetchDataObserver = new MutationObserver(() => {
+const fetchDataObserver = new MutationObserver((mutationsList, observer) => {
+    console.log("NEW MUTATION")
+    const allInternal = mutationsList.every(mutation => {
+        if (mutation.type === 'childList') {
+            // Проверяем добавленные узлы
+            for (let node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains(OUT_ELEMS_CLASS)) {
+                    return false;
+                }
+            }
+            // При необходимости можно также проверить удалённые узлы
+            for (let node of mutation.removedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains(OUT_ELEMS_CLASS)) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (mutation.type === 'attributes') {
+            // Для изменения атрибутов проверяем сам элемент
+            return mutation.target.classList.contains(OUT_ELEMS_CLASS);
+        }
+        return false;
+    });
+    console.log(mutationsList, allInternal)
     document.querySelectorAll('div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr').forEach((row) => {
-        if (row.querySelector("span") !== null && row.querySelector(".wbPluginMZ") === null) {
+        if (!allInternal && !row.querySelector(`.${OUT_ELEMS_CLASS}`)) {
+            // observer.disconnect()
+            console.log("WEEWEE", row, row.querySelector(`.${OUT_ELEMS_CLASS}`))
+
             const nmID = parseInt(row.querySelector('span[data-testid="card-nmID-text"]').innerText.split(": ")[1], 10)
             const nmIDVar = `wbId-${nmID}`
             chrome.storage.local.get([nmIDVar, 'greenborder', 'yellowborder'], (result) => {
@@ -109,12 +142,12 @@ const fetchDataObserver = new MutationObserver(() => {
                     return
                 }
                 let customElement = document.createElement("div")
-               // customElement.textContent = result[nmIDVar]
-                customElement.className = "wbPluginMZ"
+                customElement.textContent = result[nmIDVar]
+                customElement.className = OUT_ELEMS_CLASS
 
                 const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
                 const svg = document.createElementNS(svgNS, "svg");
-                svg.setAttribute("class", "wbPluginCM")
+                svg.setAttribute("class", OUT_ELEMS_CLASS)
                 svg.setAttribute("width", "20");
                 svg.setAttribute("height", "20");
               
@@ -139,7 +172,15 @@ const fetchDataObserver = new MutationObserver(() => {
 
                 row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(customElement);
                 row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(svg);
-                row.setAttribute('data-processed', 'true')
+                // row.setAttribute('data-processed', 'true')
+
+
+                // observer.observe(document.querySelector('table[data-testid="all-goods-table"] tbody'), {
+                //     childList: true,
+                //     subtree: true,
+                //     attributes: false,
+                //     characterData: false
+                // })
             })
         }
     });
@@ -174,11 +215,46 @@ function waitForElement(selector, onElementFound) {
 
 // Usage: Wait for #myElement, then observe its mutations
 
-waitForElement('table[data-testid="all-goods-table"] tbody', (table) => {
+
+function onTableFullReady() {
+    console.log("Таблица полностью загружена и не изменяется.");
+    // Ваш код для плагина
+    const table = document.querySelector('table[data-testid="all-goods-table"] tbody')
     fetchDataObserver.observe(table, {
         childList: true,
         subtree: true,
         attributes: false,
         characterData: false
     });
+    triggerTableMutation(table)
+}
+
+let timer = null;
+const debounceDelay = 500;
+
+let fullLoadingObserver = new MutationObserver(function(mutationsList, observer) {
+    console.log(mutationsList)
+    if (timer) {
+        clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+        onTableFullReady();
+        observer.disconnect(); // отключаем наблюдатель, чтобы не вызывать повторно
+    }, debounceDelay);
 });
+
+
+waitForElement('table[data-testid="all-goods-table"] tbody', (table) => {
+    console.log("Сама таблица подгружена");
+    fullLoadingObserver.observe(table, { childList: true, subtree: true, attributes: true });
+});
+
+function triggerTableMutation(table) {
+  // Добавляем data-атрибут или изменяем его значение
+  table.setAttribute('data-mutation', 'triggered');
+
+  // Чтобы изменение было "мгновенным" и не оставляло следа, можно удалить атрибут через короткий промежуток времени
+  setTimeout(() => {
+    table.removeAttribute('data-mutation');
+  }, 0);
+}
