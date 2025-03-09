@@ -1,0 +1,109 @@
+/* Общие стили */
+body {
+    width: 300px;
+    padding: 10px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+}
+
+/* Стили для вкладок */
+.tab {
+    display: flex;
+    border-bottom: 2px solid #bf46f7;
+    background-color: #ffffff;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.tab button {
+    background-color: inherit;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 12px 16px;
+    transition: 0.3s;
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.tab button:hover {
+    background-color: #e0f3ff;
+}
+
+.tab button.active {
+    background-color: #bf46f7;
+    color: white;
+}
+
+/* Стили для контента вкладок */
+.tabcontent {
+    display: none;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background-color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для input и button */
+input, button, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus, textarea:focus {
+    border-color: #bf46f7;
+    box-shadow: 0 0 5px rgba(156, 17, 248, 0.5);
+    outline: none;
+}
+
+button {
+    background-color: #bf46f7;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+button:hover {
+    background-color: #a011f3;
+}
+
+button:active {
+    background-color: #6e1299;
+}
+
+textarea {
+    height: 150px;
+    resize: none;
+    background-color: #f9f9f9;
+}
+
+/* Стили для сообщений */
+#outputText {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    color: #333;
+}
+
+/* Анимация появления контента */
+.tabcontent {
+    animation: fadeEffect 0.5s;
+}
+
+@keyframes fadeEffect {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
