@@ -46,11 +46,14 @@ function updateSingleProduct(product) {
 }
 
 function updateProductElem(elemInd, daysLeft) {
+    const existedElems = document.querySelectorAll(
+        'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
+    )[elemInd].querySelector('td[data-testid$=stocks]').querySelectorAll(`.${OUT_ELEMS_CLASS}`)
+    existedElems[0].parentNode.removeChild(existedElems[0]);
 
-    let newElem = document.createElement("div")
     const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
     const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("class", "wbPluginCM")
+    svg.setAttribute("class", OUT_ELEMS_CLASS)
     svg.setAttribute("width", "20");
     svg.setAttribute("height", "20");
   
@@ -62,31 +65,16 @@ function updateProductElem(elemInd, daysLeft) {
 
     chrome.storage.local.get(['greenborder', 'yellowborder'], (result) => {
         if (parseInt(daysLeft, 10) < result.yellowborder) {
-            newElem.textContent = 'red'
             circle.setAttribute("fill", "red"); // Цвет заливки
         } else if (parseInt(daysLeft, 10) < result.greenborder) {
-            newElem.textContent = 'yellow'
             circle.setAttribute("fill", "yellow"); // Цвет заливки
         } else {
-            newElem.textContent = 'green'
             circle.setAttribute("fill", "green"); // Цвет заливки
         }
     })
     
-    newElem.className = OUT_ELEMS_CLASS
     // Добавляем круг в SVG
     svg.appendChild(circle);
-
-
-    const existedElems = document.querySelectorAll(
-        'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
-    )[elemInd].querySelector('td[data-testid$=stocks]').querySelectorAll(`.${OUT_ELEMS_CLASS}`)
-    while(existedElems.length > 0) {
-        existedElems[0].parentNode.removeChild(existedElems[0]);
-    }
-    document.querySelectorAll(
-        'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
-    )[elemInd].querySelector('td[data-testid$=stocks]').firstChild.appendChild(newElem)
 
     document.querySelectorAll(
         'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
@@ -141,9 +129,6 @@ const fetchDataObserver = new MutationObserver((mutationsList, observer) => {
                 if (result[nmIDVar] === undefined) {
                     return
                 }
-                let customElement = document.createElement("div")
-                customElement.textContent = result[nmIDVar]
-                customElement.className = OUT_ELEMS_CLASS
 
                 const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
                 const svg = document.createElementNS(svgNS, "svg");
@@ -158,19 +143,14 @@ const fetchDataObserver = new MutationObserver((mutationsList, observer) => {
                 circle.setAttribute("r", "10");
             
                 if (parseInt(result[nmIDVar], 10) < result.yellowborder) {
-                    customElement.textContent = 'red'
                     circle.setAttribute("fill", "red"); // Цвет заливки
                 } else if (parseInt(result[nmIDVar], 10) < result.greenborder) {
-                    customElement.textContent = 'yellow'
                     circle.setAttribute("fill", "yellow"); // Цвет заливки
                 } else {
-                    customElement.textContent = 'green'
                     circle.setAttribute("fill", "green"); // Цвет заливки
                 }
                 svg.appendChild(circle);
 
-
-                row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(customElement);
                 row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(svg);
                 // row.setAttribute('data-processed', 'true')
 
