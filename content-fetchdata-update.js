@@ -45,8 +45,34 @@ function updateSingleProduct(product) {
 
 function updateProductElem(elemInd, daysLeft) {
     let newElem = document.createElement("div")
-    newElem.textContent = daysLeft
+    const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", "wbPluginCM")
+    svg.setAttribute("width", "20");
+    svg.setAttribute("height", "20");
+  
+    // Создаем цветной круг
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", "10");
+    circle.setAttribute("cy", "10");
+    circle.setAttribute("r", "10");
+
+    chrome.storage.local.get(['greenborder', 'yellowborder'], (result) => {
+        if (parseInt(daysLeft, 10) < result.yellowborder) {
+            newElem.textContent = 'red'
+            circle.setAttribute("fill", "red"); // Цвет заливки
+        } else if (parseInt(daysLeft, 10) < result.greenborder) {
+            newElem.textContent = 'yellow'
+            circle.setAttribute("fill", "yellow"); // Цвет заливки
+        } else {
+            newElem.textContent = 'green'
+            circle.setAttribute("fill", "green"); // Цвет заливки
+        }
+    })
+    
     newElem.className = "wbPluginMZ"
+    // Добавляем круг в SVG
+    svg.appendChild(circle);
 
     // document.querySelectorAll(
     //     'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
@@ -54,6 +80,10 @@ function updateProductElem(elemInd, daysLeft) {
     document.querySelectorAll(
         'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
     )[elemInd].querySelector('td[data-testid$=stocks]').firstChild.appendChild(newElem)
+
+    document.querySelectorAll(
+        'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
+    )[elemInd].querySelector('td[data-testid$=stocks]').firstChild.appendChild(svg)
 }
 
 function parseTotalRemainsForProduct(wbListInd) {
@@ -74,14 +104,41 @@ const fetchDataObserver = new MutationObserver(() => {
         if (row.querySelector("span") !== null && row.querySelector(".wbPluginMZ") === null) {
             const nmID = parseInt(row.querySelector('span[data-testid="card-nmID-text"]').innerText.split(": ")[1], 10)
             const nmIDVar = `wbId-${nmID}`
-            chrome.storage.local.get([nmIDVar], (result) => {
+            chrome.storage.local.get([nmIDVar, 'greenborder', 'yellowborder'], (result) => {
                 if (result[nmIDVar] === undefined) {
                     return
                 }
                 let customElement = document.createElement("div")
-                customElement.textContent = result[nmIDVar]
+               // customElement.textContent = result[nmIDVar]
                 customElement.className = "wbPluginMZ"
+
+                const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
+                const svg = document.createElementNS(svgNS, "svg");
+                svg.setAttribute("class", "wbPluginCM")
+                svg.setAttribute("width", "20");
+                svg.setAttribute("height", "20");
+              
+                // Создаем цветной круг
+                const circle = document.createElementNS(svgNS, "circle");
+                circle.setAttribute("cx", "10");
+                circle.setAttribute("cy", "10");
+                circle.setAttribute("r", "10");
+            
+                if (parseInt(result[nmIDVar], 10) < result.yellowborder) {
+                    customElement.textContent = 'red'
+                    circle.setAttribute("fill", "red"); // Цвет заливки
+                } else if (parseInt(result[nmIDVar], 10) < result.greenborder) {
+                    customElement.textContent = 'yellow'
+                    circle.setAttribute("fill", "yellow"); // Цвет заливки
+                } else {
+                    customElement.textContent = 'green'
+                    circle.setAttribute("fill", "green"); // Цвет заливки
+                }
+                svg.appendChild(circle);
+
+
                 row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(customElement);
+                row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(svg);
                 row.setAttribute('data-processed', 'true')
             })
         }
