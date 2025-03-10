@@ -1,4 +1,5 @@
 // Обработка сообщений для выполнения запроса
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.action === "fetchData") {
       console.log("NEW FETCH BACKGROUND")

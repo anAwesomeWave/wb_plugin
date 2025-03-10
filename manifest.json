@@ -9,7 +9,8 @@
     "storage",
     "notifications",
     "clipboardWrite",
-    "tabs"
+    "tabs",
+    "webNavigation"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -29,9 +30,12 @@
     "service_worker": "background.js",
     "type": "module"
   },
+  "host_permissions": [
+    "https://seller.wildberries.ru/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://seller.wildberries.ru/new-goods/all-goods"],
+      "matches": ["https://seller.wildberries.ru/*"],
       "js": ["content-extract-ids.js", "content-no-token-display.js", "content-fetchdata-update.js"]
     }
   ]
