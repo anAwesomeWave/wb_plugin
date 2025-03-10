@@ -30,9 +30,11 @@ function waitForElement(selector, onElementFound) {
 }
 
 function triggerTableMutation(table) {
-  table.setAttribute('data-mutation', 'triggered');
+  const tempDiv = document.createElement('div');
+  tempDiv.style.display = 'none';
+  table.appendChild(tempDiv);
   setTimeout(() => {
-    table.removeAttribute('data-mutation');
+    table.removeChild(tempDiv);
   }, 0);
 }
 
@@ -42,44 +44,44 @@ function parseTotalRemainsForProduct(wbListInd) {
   )[wbListInd].querySelector('td[data-testid$="stocks"]').querySelector('span').innerText, 10);
 }
 
-function updateProductElem(elemInd, daysLeft) {
-  const row = document.querySelectorAll(
-    'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
-  )[elemInd];
-  const stocksCell = row.querySelector('td[data-testid$=stocks]');
+// function updateProductElem(elemInd, daysLeft) {
+//   const row = document.querySelectorAll(
+//     'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
+//   )[elemInd];
+//   const stocksCell = row.querySelector('td[data-testid$=stocks]');
+//
+//   // Если элемент уже существует, удаляем его
+//   const existedElems = stocksCell.querySelectorAll(`.${OUT_ELEMS_CLASS}`);
+//   if (existedElems.length > 0) {
+//     existedElems[0].parentNode.removeChild(existedElems[0]);
+//   }
+//
+//   const svgNS = "http://www.w3.org/2000/svg";
+//   const svg = document.createElementNS(svgNS, "svg");
+//   svg.setAttribute("class", OUT_ELEMS_CLASS);
+//   svg.setAttribute("width", "20");
+//   svg.setAttribute("height", "20");
+//
+//   const circle = document.createElementNS(svgNS, "circle");
+//   circle.setAttribute("cx", "10");
+//   circle.setAttribute("cy", "10");
+//   circle.setAttribute("r", "10");
+//
+//   chrome.storage.local.get(['greenborder', 'yellowborder'], (result) => {
+//     if (parseInt(daysLeft, 10) < result.yellowborder) {
+//       circle.setAttribute("fill", "red");
+//     } else if (parseInt(daysLeft, 10) < result.greenborder) {
+//       circle.setAttribute("fill", "yellow");
+//     } else {
+//       circle.setAttribute("fill", "green");
+//     }
+//   });
+//
+//   svg.appendChild(circle);
+//   stocksCell.firstChild.appendChild(svg);
+// }
 
-  // Если элемент уже существует, удаляем его
-  const existedElems = stocksCell.querySelectorAll(`.${OUT_ELEMS_CLASS}`);
-  if (existedElems.length > 0) {
-    existedElems[0].parentNode.removeChild(existedElems[0]);
-  }
-
-  const svgNS = "http://www.w3.org/2000/svg";
-  const svg = document.createElementNS(svgNS, "svg");
-  svg.setAttribute("class", OUT_ELEMS_CLASS);
-  svg.setAttribute("width", "20");
-  svg.setAttribute("height", "20");
-
-  const circle = document.createElementNS(svgNS, "circle");
-  circle.setAttribute("cx", "10");
-  circle.setAttribute("cy", "10");
-  circle.setAttribute("r", "10");
-
-  chrome.storage.local.get(['greenborder', 'yellowborder'], (result) => {
-    if (parseInt(daysLeft, 10) < result.yellowborder) {
-      circle.setAttribute("fill", "red");
-    } else if (parseInt(daysLeft, 10) < result.greenborder) {
-      circle.setAttribute("fill", "yellow");
-    } else {
-      circle.setAttribute("fill", "green");
-    }
-  });
-
-  svg.appendChild(circle);
-  stocksCell.firstChild.appendChild(svg);
-}
-
-function updateSingleProduct(product) {
+function updateDaysLeftInfo(product) {
   const nmID = product["nmID"];
   const avgOrders = product["statistics"]["selectedPeriod"]["avgOrdersCountPerDay"];
   chrome.storage.local.get(['mapWbIdToIndex', 'wbIds'], (result) => {
@@ -90,7 +92,7 @@ function updateSingleProduct(product) {
     const pageInd = result.mapWbIdToIndex[nmID];
     const totalLeft = parseTotalRemainsForProduct(pageInd);
     const daysLeft = (avgOrders === 0) ? totalLeft : totalLeft / avgOrders;
-    updateProductElem(pageInd, daysLeft);
+    // updateProductElem(pageInd, daysLeft);
     chrome.storage.local.set({[`wbId-${nmID}`]: daysLeft }, function() {});
   });
 }
@@ -99,7 +101,7 @@ async function updateFetchDataResp(data) {
   const dataArr = data["cards"];
   console.log("Length of cards from API", dataArr.length);
   for (let i = 0; i < dataArr.length; i++) {
-    updateSingleProduct(dataArr[i]);
+    updateDaysLeftInfo(dataArr[i]);
   }
 }
 
@@ -107,10 +109,10 @@ function onTableFullReady() {
   console.log("Таблица полностью загружена и не изменяется.");
   if (tableElement && fetchDataObserver) {
     fetchDataObserver.observe(tableElement, {
-      childList: true,
-      subtree: true,
-      attributes: false,
-      characterData: false
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
     });
     triggerTableMutation(tableElement);
   }
@@ -130,7 +132,8 @@ function init() {
     if (request.action === 'fetchdata') {
       console.log(`NEW FETCH DATA WITH CODE ${request.code}`);
       if (request.code === 200) {
-        updateFetchDataResp(request.data);
+          updateFetchDataResp(request.data) // обновляем данные
+          updateTableElements() // перекрашиваем
       }
     }
   };
@@ -139,60 +142,22 @@ function init() {
   // Создаём наблюдатель за изменениями данных (fetchDataObserver)
   fetchDataObserver = new MutationObserver((mutationsList, observer) => {
     console.log("NEW MUTATION");
-    const allInternal = mutationsList.every(mutation => {
-      if (mutation.type === 'childList') {
-        for (let node of mutation.addedNodes) {
-          if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains(OUT_ELEMS_CLASS)) {
-            return false;
-          }
+    const hasExternalMutation = mutationsList.some((mutation) => {
+        if (mutation.type === 'childList') {
+            // Проверяем добавленные/удаленные узлы
+          return [...mutation.addedNodes, ...mutation.removedNodes].some(node =>
+                node.nodeType === Node.ELEMENT_NODE &&
+                !node.classList?.contains(OUT_ELEMS_CLASS)
+            );
         }
-        for (let node of mutation.removedNodes) {
-          if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains(OUT_ELEMS_CLASS)) {
-            return false;
-          }
-        }
-        return true;
-      } else if (mutation.type === 'attributes') {
-        return mutation.target.classList.contains(OUT_ELEMS_CLASS);
-      }
-      return false;
+        return true; // Все остальные типы мутаций считаем внешними
     });
-    console.log(mutationsList, allInternal);
-    document.querySelectorAll(
-      'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr'
-    ).forEach((row) => {
-      if (!allInternal && !row.querySelector(`.${OUT_ELEMS_CLASS}`)) {
-        console.log("WEEWEE", row, row.querySelector(`.${OUT_ELEMS_CLASS}`));
-        const nmID = parseInt(
-          row.querySelector('span[data-testid="card-nmID-text"]').innerText.split(": ")[1],
-          10
-        );
-        const nmIDVar = `wbId-${nmID}`;
-        chrome.storage.local.get([nmIDVar, 'greenborder', 'yellowborder'], (result) => {
-          if (result[nmIDVar] === undefined) {
-            return;
-          }
-          const svgNS = "http://www.w3.org/2000/svg";
-          const svg = document.createElementNS(svgNS, "svg");
-          svg.setAttribute("class", OUT_ELEMS_CLASS);
-          svg.setAttribute("width", "20");
-          svg.setAttribute("height", "20");
-          const circle = document.createElementNS(svgNS, "circle");
-          circle.setAttribute("cx", "10");
-          circle.setAttribute("cy", "10");
-          circle.setAttribute("r", "10");
-          if (parseInt(result[nmIDVar], 10) < result.yellowborder) {
-            circle.setAttribute("fill", "red");
-          } else if (parseInt(result[nmIDVar], 10) < result.greenborder) {
-            circle.setAttribute("fill", "yellow");
-          } else {
-            circle.setAttribute("fill", "green");
-          }
-          svg.appendChild(circle);
-          row.querySelector('td[data-testid$=stocks]').firstChild.appendChild(svg);
-        });
-      }
-    });
+    console.log(mutationsList, hasExternalMutation);
+    if (hasExternalMutation) {
+    console.log("Внешнее изменение таблицы");
+    this.skipNextUpdate = true; // Добавляем защитный флаг
+    updateTableElements();
+    }
   });
 
   // Наблюдатель за полной загрузкой таблицы
@@ -213,6 +178,56 @@ function init() {
     tableElement = table;
     fullLoadingObserver.observe(table, { childList: true, subtree: true, attributes: true });
   });
+}
+
+function updateTableElements() {
+    document.querySelectorAll('tr[role="button"][data-testid^="all-goods-table"]').forEach((row) => {
+        const nmID = parseInt(
+            row.querySelector('span[data-testid="card-nmID-text"]')?.innerText?.split(": ")[1],
+            10
+        );
+        if (!nmID) return;
+
+        const stocksCell = row.querySelector('td[data-testid$=stocks]');
+        if (!stocksCell) return;
+
+        // Удаляем все существующие SVG
+        const existingSVGs = stocksCell.querySelectorAll(`.${OUT_ELEMS_CLASS}`);
+        existingSVGs.forEach(svg => svg.remove());
+
+        // Добавляем новый элемент
+        chrome.storage.local.get([`wbId-${nmID}`, 'greenborder', 'yellowborder'], (result) => {
+            if (result[`wbId-${nmID}`] === undefined) return;
+
+            const daysLeft = result[`wbId-${nmID}`];
+            const color = getColorByDays(daysLeft, result.yellowborder, result.greenborder);
+            const svg = createStatusSVG(color);
+            stocksCell.firstChild.appendChild(svg);
+        });
+    });
+}
+
+function getColorByDays(daysLeft, yellowBorder, greenBorder) {
+    if (daysLeft < yellowBorder) return "red";
+    if (daysLeft < greenBorder) return "yellow";
+    return "green";
+}
+
+function createStatusSVG(color) {
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
+    svg.setAttribute("class", OUT_ELEMS_CLASS);
+    svg.setAttribute("width", "20");
+    svg.setAttribute("height", "20");
+
+    const circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx", "10");
+    circle.setAttribute("cy", "10");
+    circle.setAttribute("r", "10");
+    circle.setAttribute("fill", color);
+
+    svg.appendChild(circle);
+    return svg;
 }
 
 function cleanup() {
