@@ -84,7 +84,8 @@ function updateTableElements() {
   updateInProgress = true;
 
   try {
-    document.querySelectorAll('tr[role="button"][data-testid^="all-goods-table"]').forEach(row => {
+    // document.querySelectorAll('tr[role="button"][data-testid^="all-goods-table"]').forEach(row => {
+    tableElement.querySelectorAll('tr').forEach(row => {
       const nmIDElem = row.querySelector('[data-testid="card-nmID-text"]');
       if (!nmIDElem) return;
 
@@ -144,7 +145,7 @@ function initObservers() {
       console.log("Обнаружены новые строки");
       setTimeout(() => {
         updateTableElements();
-        triggerTableMutation(tableElement);
+        // triggerTableMutation(tableElement);
       }, 300);
     }
   });
