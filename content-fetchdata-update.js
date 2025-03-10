@@ -49,7 +49,9 @@ function updateProductElem(elemInd, daysLeft) {
     const existedElems = document.querySelectorAll(
         'div[class^="All-goods__table"] tbody[class^="Table__tbody"] tr[role="button"][data-testid^="all-goods-table"]'
     )[elemInd].querySelector('td[data-testid$=stocks]').querySelectorAll(`.${OUT_ELEMS_CLASS}`)
-    existedElems[0].parentNode.removeChild(existedElems[0]);
+    if (existedElems.length > 0) {
+        existedElems[0].parentNode.removeChild(existedElems[0]);
+    }
 
     const svgNS = "http://www.w3.org/2000/svg"; // Пространство имен SVG
     const svg = document.createElementNS(svgNS, "svg");
