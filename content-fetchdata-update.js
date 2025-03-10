@@ -137,7 +137,7 @@ function initObservers() {
     const hasNewRows = mutations.some(mutation =>
       [...mutation.addedNodes].some(node =>
         node.nodeType === Node.ELEMENT_NODE &&
-        node.matches('tr[data-testid^="all-goods-table"]')
+        node.matches('tr')
       )
     );
 
