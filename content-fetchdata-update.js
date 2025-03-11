@@ -111,13 +111,21 @@ function updateTableElements() {
           result.yellowborder || 5,
           result.greenborder || 10
         );
-
+        
+        // Добавление цветного индикатора
         const svg = createStatusSVG(color);
         console.log('row NMID:', nmID);
         console.log('stocksCell:', stocksCell);
         console.log('stocksCell.firstElementChild:', container);
 
         container.appendChild(svg);
+
+        // Добавление количества дней
+        let customElement = document.createElement("div")
+        customElement.className = OUT_ELEMS_CLASS
+        customElement.textContent = parseInt(result[`wbId-${nmID}`]).toFixed()
+
+        container.appendChild(customElement);
       });
     });
   } catch (error) {
