@@ -215,20 +215,26 @@ function getColorByDays(daysLeft, yellowBorder, greenBorder) {
 }
 
 function createStatusSVG(color) {
-    const svgNS = "http://www.w3.org/2000/svg";
-    const svg = document.createElementNS(svgNS, "svg");
-    svg.setAttribute("class", OUT_ELEMS_CLASS);
-    svg.setAttribute("width", "20");
-    svg.setAttribute("height", "20");
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("class", OUT_ELEMS_CLASS);
+  svg.setAttribute("width", "20");
+  svg.setAttribute("height", "20");
 
-    const circle = document.createElementNS(svgNS, "circle");
-    circle.setAttribute("cx", "10");
-    circle.setAttribute("cy", "10");
-    circle.setAttribute("r", "10");
-    circle.setAttribute("fill", color);
+  const gradientId = `fadeGradient-${Date.now()}`;
 
-    svg.appendChild(circle);
-    return svg;
+  // Define the radial gradient directly within the SVG string
+  svg.innerHTML = `
+      <defs>
+          <radialGradient id="${gradientId}" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" stop-color="${color}" stop-opacity="1" />
+              <stop offset="100%" stop-color="${color}" stop-opacity="0" />
+          </radialGradient>
+      </defs>
+      <circle cx="10" cy="10" r="10" fill="url(#${gradientId})" />
+  `;
+
+  return svg;
 }
 
 function cleanup() {
